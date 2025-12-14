@@ -1,7 +1,7 @@
 // 云端同步模块
 
 const DEFAULT_SYNC_CONFIG = {
-  serverUrl: '',
+  serverUrl: 'https://bookmark.wyzai.top/api',
   token: null,
   email: null,
   lastSyncAt: null,

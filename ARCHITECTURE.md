@@ -167,7 +167,7 @@ async function saveBookmark() {
 
 ```javascript
 const DEFAULT_SYNC_CONFIG = {
-  serverUrl: '',  // 后端地址（用户自行配置）
+  serverUrl: 'https://bookmark.wyzai.top/api',  // 后端地址
   token: null,                                // JWT token
   email: null,                                // 用户邮箱
   lastSyncAt: null,                           // 最后同步时间
