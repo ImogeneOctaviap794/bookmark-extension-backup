@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>书签管理器 - 智能书签助手</title>
+  <style>
+    :root {
+      --geist-background: #000;
+      --geist-foreground: #fff;
+      --accents-1: #111;
+      --accents-2: #222;
+      --accents-3: #333;
+      --accents-4: #444;
+      --accents-5: #666;
+      --accents-6: #888;
+      --accents-7: #999;
+      --accents-8: #ccc;
+      --geist-success: #0070f3;
+      --geist-error: #e00;
+      --geist-warning: #f5a623;
+      --radius: 8px;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--geist-background);
+      color: var(--geist-foreground);
+      min-height: 100vh;
+    }
+    
+    /* Header */
+    .header {
+      background: var(--accents-1);
+      border-bottom: 1px solid var(--accents-3);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .header-stats {
+      color: var(--accents-6);
+      font-size: 13px;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* Search */
+    .search-box {
+      padding: 12px 24px;
+      background: var(--accents-1);
+      border-bottom: 1px solid var(--accents-2);
+    }
+    
+    .search-input {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px 14px;
+      background: var(--accents-2);
+      border: 1px solid var(--accents-3);
+      border-radius: var(--radius);
+      color: var(--geist-foreground);
+      font-size: 14px;
+    }
+    
+    .search-input:focus {
+      outline: none;
+      border-color: var(--geist-success);
+    }
+    
+    .search-input::placeholder {
+      color: var(--accents-5);
+    }
+    
+    /* Main Layout */
+    .main {
+      display: flex;
+      height: calc(100vh - 120px);
+    }
+    
+    /* Sidebar - Folders */
+    .sidebar {
+      width: 280px;
+      background: var(--accents-1);
+      border-right: 1px solid var(--accents-2);
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+    
+    .sidebar-title {
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accents-6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .folder-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      gap: 8px;
+    }
+    
+    .folder-item:hover {
+      background: var(--accents-2);
+    }
+    
+    .folder-item.active {
+      background: var(--accents-2);
+      border-right: 2px solid var(--geist-success);
+    }
+    
+    .folder-icon {
+      color: var(--accents-6);
+      flex-shrink: 0;
+    }
+    
+    .folder-name {
+      flex: 1;
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .folder-count {
+      font-size: 12px;
+      color: var(--accents-5);
+      background: var(--accents-3);
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    
+    .folder-children {
+      margin-left: 20px;
+    }
+    
+    /* Content - Bookmarks */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+    
+    .content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--accents-2);
+    }
+    
+    .content-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .view-btn {
+      padding: 6px 10px;
+      background: var(--accents-2);
+      border: 1px solid var(--accents-3);
+      border-radius: 4px;
+      color: var(--accents-6);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .view-btn:hover, .view-btn.active {
+      background: var(--accents-3);
+      color: var(--geist-foreground);
+    }
+    
+    /* Bookmark List */
+    .bookmark-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .bookmark-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--accents-1);
+      border-radius: var(--radius);
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .bookmark-item:hover {
+      background: var(--accents-2);
+    }
+    
+    .bookmark-favicon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      border-radius: 2px;
+    }
+    
+    .bookmark-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .bookmark-title {
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .bookmark-url {
+      font-size: 12px;
+      color: var(--accents-5);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .bookmark-actions {
+      display: none;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    
+    .bookmark-item:hover .bookmark-actions {
+      display: flex;
+    }
+    
+    /* 网格模式按钮绝对定位，避免抖动 */
+    .bookmark-grid .bookmark-item {
+      position: relative;
+    }
+    
+    .bookmark-grid .bookmark-actions {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 0;
+    }
+    
+    .action-btn {
+      padding: 4px 8px;
+      background: var(--accents-3);
+      border: none;
+      border-radius: 4px;
+      color: var(--accents-7);
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+    
+    .action-btn:hover {
+      background: var(--accents-4);
+      color: var(--geist-foreground);
+    }
+    
+    .action-btn.danger:hover {
+      background: var(--geist-error);
+      color: white;
+    }
+    
+    /* Grid View */
+    .bookmark-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .bookmark-grid .bookmark-item {
+      flex-direction: column;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .bookmark-grid .bookmark-favicon {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 8px;
+    }
+    
+    .bookmark-grid .bookmark-info {
+      width: 100%;
+    }
+    
+    .bookmark-grid .bookmark-actions {
+      margin-top: 8px;
+    }
+    
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    
+    .btn-primary {
+      background: var(--geist-success);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    
+    .btn-secondary {
+      background: var(--accents-2);
+      color: var(--geist-foreground);
+      border: 1px solid var(--accents-3);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--accents-3);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--accents-5);
+    }
+    
+    .empty-state svg {
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      display: none;
+      z-index: 1000;
+    }
+    
+    .toast.show {
+      display: block;
+      animation: slideIn 0.2s ease;
+    }
+    
+    .toast.success {
+      background: rgba(0, 112, 243, 0.1);
+      border: 1px solid rgba(0, 112, 243, 0.3);
+      color: #0070f3;
+    }
+    
+    .toast.error {
+      background: rgba(238, 0, 0, 0.1);
+      border: 1px solid rgba(238, 0, 0, 0.3);
+      color: #e00;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--accents-1);
+      border: 1px solid var(--accents-3);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      animation: modalIn 0.2s ease;
+    }
+    
+    .modal-sm {
+      max-width: 360px;
+    }
+    
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--accents-2);
+    }
+    
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--accents-5);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .modal-close:hover {
+      color: var(--geist-foreground);
+    }
+    
+    .modal-body {
+      padding: 20px;
+    }
+    
+    .modal-body p {
+      color: var(--accents-6);
+      font-size: 14px;
+    }
+    
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-top: 1px solid var(--accents-2);
+      gap: 12px;
+    }
+    
+    .modal-footer-right {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--accents-7);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--accents-2);
+      border: 1px solid var(--accents-3);
+      border-radius: 6px;
+      color: var(--geist-foreground);
+      font-size: 14px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--geist-success);
+    }
+    
+    .form-input[readonly] {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* AI Suggest Box */
+    .ai-suggest-box {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(0, 112, 243, 0.1);
+      border: 1px solid rgba(0, 112, 243, 0.2);
+      border-radius: 8px;
+    }
+    
+    .ai-suggest-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0070f3;
+      margin-bottom: 8px;
+    }
+    
+    .ai-suggest-content {
+      font-size: 14px;
+      color: var(--geist-foreground);
+      margin-bottom: 10px;
+      word-break: break-all;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    .btn-danger {
+      background: var(--geist-error);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      opacity: 0.9;
+    }
+    
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--accents-1);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--accents-3);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accents-4);
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-left">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      <h1>书签管理器</h1>
+      <span class="header-stats" id="headerStats">加载中...</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" id="refreshBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        刷新
+      </button>
+      <button class="btn btn-secondary" id="optionsBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        设置
+      </button>
+    </div>
+  </header>
+  
+  <div class="search-box">
+    <input type="text" class="search-input" id="searchInput" placeholder="搜索书签...">
+  </div>
+  
+  <main class="main">
+    <aside class="sidebar">
+      <div class="sidebar-title">文件夹</div>
+      <div id="folderTree"></div>
+    </aside>
+    
+    <section class="content">
+      <div class="content-header">
+        <span class="content-title" id="contentTitle">所有书签</span>
+        <div class="view-toggle">
+          <button class="view-btn active" id="listViewBtn" title="列表视图">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+          <button class="view-btn" id="gridViewBtn" title="网格视图">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="bookmark-list" id="bookmarkList"></div>
+    </section>
+  </main>
+  
+  <div class="toast" id="toast"></div>
+  
+  <!-- 编辑弹窗 -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>编辑书签</h3>
+        <button class="modal-close" id="editModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">书签名称</label>
+          <input type="text" class="form-input" id="editBookmarkName" placeholder="输入书签名称">
+        </div>
+        <div class="form-group">
+          <label class="form-label">书签地址</label>
+          <input type="url" class="form-input" id="editBookmarkUrl" placeholder="https://" readonly>
+        </div>
+        <div class="ai-suggest-box" id="aiSuggestBox" style="display: none;">
+          <div class="ai-suggest-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+            AI 建议
+          </div>
+          <div class="ai-suggest-content" id="aiSuggestContent"></div>
+          <button class="btn btn-sm" id="applyAiSuggest">应用建议</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="aiAnalyzeBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          AI 分析
+        </button>
+        <div class="modal-footer-right">
+          <button class="btn btn-secondary" id="editModalCancel">取消</button>
+          <button class="btn btn-primary" id="editModalSave">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 确认弹窗 -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3 id="confirmTitle">确认操作</h3>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage">确定要执行此操作吗？</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="confirmCancel">取消</button>
+        <button class="btn btn-danger" id="confirmOk">确定</button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="bookmarks.js"></script>
+</body>
+</html>

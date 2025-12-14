@@ -1,0 +1,45 @@
+<div id="bookmark-sidebar" class="bookmark-sidebar">
+  <div class="sb-header">
+    <div class="sb-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      书签搜索
+    </div>
+    <div class="sb-actions">
+      <button class="sb-btn" id="sbNewChat" title="新对话">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
+      <button class="sb-btn sb-btn-close" id="sbClose" title="关闭">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="sb-chat" id="sbChat">
+    <div class="sb-msg sb-msg-ai">
+      <div class="sb-text">搜索你的书签，试试这些：</div>
+      <div class="sb-tags">
+        <button class="sb-tag" data-q="GitHub">GitHub</button>
+        <button class="sb-tag" data-q="AI">AI</button>
+        <button class="sb-tag" data-q="文档">文档</button>
+        <button class="sb-tag" data-q="工具">工具</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="sb-input-area">
+    <div class="sb-input-wrap">
+      <input type="text" class="sb-input" id="sbInput" placeholder="搜索书签...">
+      <button class="sb-send" id="sbSend">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

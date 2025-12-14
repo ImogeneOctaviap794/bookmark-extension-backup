@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=400">
+  <title>智能书签助手</title>
+  <style>
+    /* Vercel Design System */
+    :root {
+      --geist-foreground: #fff;
+      --geist-background: #000;
+      --geist-secondary: #888;
+      --geist-border: #333;
+      --geist-success: #0070f3;
+      --geist-error: #e00;
+      --accents-1: #111;
+      --accents-2: #1a1a1a;
+      --accents-3: #333;
+      --accents-5: #666;
+      --accents-7: #999;
+      --radius: 8px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background: var(--geist-background);
+      color: var(--geist-foreground);
+      width: 380px;
+      min-height: 200px;
+      padding: 0;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--geist-border);
+    }
+    
+    .header h1 {
+      font-size: 14px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .header h1 svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      color: var(--accents-5);
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    
+    .icon-btn:hover {
+      background: var(--accents-2);
+      color: var(--geist-foreground);
+    }
+    
+    .icon-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Content */
+    .content {
+      padding: 20px;
+    }
+    
+    /* Page Info */
+    .page-info {
+      background: var(--accents-1);
+      border: 1px solid var(--geist-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .page-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--geist-foreground);
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .page-url {
+      font-size: 12px;
+      color: var(--accents-5);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    /* Form */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--accents-7);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: var(--accents-1);
+      border: 1px solid var(--geist-border);
+      border-radius: var(--radius);
+      color: var(--geist-foreground);
+      transition: border-color 0.15s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--geist-foreground);
+    }
+    
+    .form-input::placeholder {
+      color: var(--accents-5);
+    }
+    
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888'%3E%3Cpath d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    
+    select.form-input option {
+      background: var(--geist-background);
+      color: var(--geist-foreground);
+    }
+    
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn-primary {
+      background: var(--geist-foreground);
+      color: var(--geist-background);
+    }
+    
+    .btn-primary:hover {
+      background: #ccc;
+    }
+    
+    .btn-primary:disabled {
+      background: var(--accents-3);
+      color: var(--accents-5);
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--geist-foreground);
+      border: 1px solid var(--geist-border);
+    }
+    
+    .btn-secondary:hover {
+      border-color: var(--geist-foreground);
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .btn-group .btn {
+      flex: 1;
+    }
+    
+    /* AI Result */
+    .ai-result {
+      background: var(--accents-1);
+      border: 1px solid var(--geist-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    
+    .ai-result.show {
+      display: block;
+    }
+    
+    .ai-result-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: var(--accents-7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .ai-result-header svg {
+      width: 14px;
+      height: 14px;
+    }
+    
+    .ai-suggestion {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--geist-border);
+    }
+    
+    .ai-suggestion:last-child {
+      border-bottom: none;
+    }
+    
+    .ai-suggestion-label {
+      font-size: 12px;
+      color: var(--accents-5);
+    }
+    
+    .ai-suggestion-value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--geist-success);
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      display: none;
+      animation: slideUp 0.2s ease;
+    }
+    
+    .toast.show {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .toast.success {
+      background: #0a2e1a;
+      border: 1px solid #0a0;
+      color: #0f0;
+    }
+    
+    .toast.error {
+      background: #2e0a0a;
+      border: 1px solid #a00;
+      color: #f00;
+    }
+    
+    .toast.info {
+      background: #0a1a2e;
+      border: 1px solid #0070f3;
+      color: #3291ff;
+    }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Loading */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--accents-3);
+      border-top-color: var(--geist-foreground);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Category Badge */
+    .category-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: var(--accents-2);
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    /* Folder List */
+    .folder-count {
+      font-size: 11px;
+      color: var(--accents-5);
+      margin-top: 4px;
+    }
+    
+    /* Sync Status */
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--accents-1);
+      border: 1px solid var(--geist-border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    
+    .sync-status-icon {
+      color: #00c853;
+    }
+    
+    .sync-status-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    
+    .sync-email {
+      font-size: 12px;
+      color: var(--geist-foreground);
+      font-weight: 500;
+    }
+    
+    .sync-time {
+      font-size: 11px;
+      color: var(--accents-5);
+    }
+    
+    .sync-btn {
+      width: 28px;
+      height: 28px;
+      border: none;
+      background: var(--accents-2);
+      color: var(--accents-7);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+    
+    .sync-btn:hover {
+      background: var(--accents-3);
+      color: var(--geist-foreground);
+    }
+    
+    .sync-btn.syncing {
+      animation: spin 1s linear infinite;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      智能书签助手
+    </h1>
+    <div style="display: flex; gap: 4px;">
+      <button class="icon-btn" id="sidebarBtn" title="打开侧边栏对话 (Alt+B)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" title="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  
+  <div class="content">
+    <!-- 同步状态 -->
+    <div class="sync-status" id="syncStatus" style="display: none;">
+      <div class="sync-status-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="sync-status-info">
+        <span class="sync-email" id="syncEmail">-</span>
+        <span class="sync-time" id="syncTime">未同步</span>
+      </div>
+      <button class="sync-btn" id="quickSyncBtn" title="立即同步">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"/>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- 当前页面信息 -->
+    <div class="page-info">
+      <div class="page-title" id="pageTitle">加载中...</div>
+      <div class="page-url" id="pageUrl">-</div>
+    </div>
+    
+    <!-- AI分析按钮 -->
+    <button class="btn btn-primary" id="analyzeBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      AI 智能分析
+    </button>
+    
+    <!-- AI分析结果 -->
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-2h2zm0-4h-2V7h2z"/>
+        </svg>
+        AI 分析结果
+      </div>
+      <div class="ai-suggestion">
+        <span class="ai-suggestion-label">建议名称</span>
+        <span class="ai-suggestion-value" id="suggestedName">-</span>
+      </div>
+      <div class="ai-suggestion">
+        <span class="ai-suggestion-label">建议分类</span>
+        <span class="ai-suggestion-value" id="suggestedCategory">-</span>
+      </div>
+    </div>
+    
+    <!-- 表单 -->
+    <div class="form-group">
+      <label class="form-label">书签名称</label>
+      <input type="text" class="form-input" id="bookmarkName" placeholder="输入书签名称">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">选择分类</label>
+      <select class="form-input" id="bookmarkFolder">
+        <option value="">加载中...</option>
+      </select>
+      <div class="folder-count" id="folderCount">-</div>
+    </div>
+    
+    <!-- 操作按钮 -->
+    <div class="btn-group">
+      <button class="btn btn-secondary" id="cancelBtn">取消</button>
+      <button class="btn btn-primary" id="saveBtn">
+        添加书签
+      </button>
+    </div>
+  </div>
+  
+  <div class="toast" id="toast"></div>
+  
+  <script src="sync.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
